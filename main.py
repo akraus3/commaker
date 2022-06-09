@@ -35,7 +35,7 @@ def main(configFile='config.ini'):
         commaker(full_filename, basis_set, title, charge, multiplicity, procs, mem,
                  header_path, com_filename)
         
-        subprocess.check_call('rung16 %s' (com_filename), shell=True)
+        subprocess.check_call('rung16 %s' % (com_filename), shell=True)
     
         
 

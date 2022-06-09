@@ -1,0 +1,1 @@
+# opt=(ts,calcfc,maxcycles=500,noeigentest) freq m06/gen pseudo=read temperature=298
