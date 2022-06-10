@@ -31,12 +31,18 @@ of the following format:
 However, it has been seperated for improved usability, because if I want to 
 automate the calculations of hundreds of atoms, I need to be able to run this
 with many different configurations for output filenames and such. 
+
+I just added .gjf file functionality to this based on the files openbabel 
+would output given the MASON xtb optimized structures and the command:
+    obabel *.mol -ogjf -m
+This is great because it solved my charge and multiplicity problem, or, at
+the very least, it pushes it down the road.
 -----
 
 Requirements
 ------------
     
-    1. A template file of an .xyz or .mol type
+    1. A template file of an .xyz or .mol or .gjf type
     2. A config.ini file
     3. ./headers/ folder with a text file with Gaussian instructions. IE :
         # opt=(maxcycles=500,noeigentest) freq m06/gen pseudo=read
@@ -170,6 +176,43 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
         [thinned_atoms.append(x) for x in atoms if x not in thinned_atoms]
         ##########        
     
+    elif template.split('.')[1] == 'gjf':
+        mol_lines = contents.split('\n') # Splits the string into lines
+        xyz_data = []
+        atoms = []
+        contents = ''
+
+        ##########
+        # This iterates through each line of the file and sees if it has a real 
+        # atomic number that is spaced correctly.
+        ##########
+        for iii in range(len(mol_lines)):
+            #This gathers the charge/multiplicity from the file
+            cm_stripper = mol_lines[iii].split('  ')
+            if len(cm_stripper) == 2:
+                charge = cm_stripper[0]
+                multiplicity = cm_stripper[1]
+
+            for symbol in p_symbols:
+                spaced_symbol = symbol+' '
+                if spaced_symbol in mol_lines[iii]:
+                    xyz_coords = mol_lines[iii]
+                    
+                    atoms.append(symbol)
+                    xyz_data.append(xyz_coords)
+
+        # Generates an xyz-esque string
+        for iii in range(len(xyz_data)):
+            contents += xyz_data[iii]+'\n'
+        contents += '\n'
+        ##########
+        # Remove duplicate atoms using a list comprehension
+        thinned_atoms = []
+        [thinned_atoms.append(x) for x in atoms if x not in thinned_atoms]
+        ##########         
+
+
+
     ##########
     # The Basis Set section. 
     atoms = thinned_atoms
