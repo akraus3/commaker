@@ -55,7 +55,7 @@ TODO AK555
 3. Custom SMD solvent ability?
 """
 
-def commaker(template, basis_set, title, charge, multiplicity, procs, 
+def commaker(template, basis_set, title, charge, multiplicity, oxidation_state, procs, 
              mem, header_path, outputfilename, pseudo_cutoff=18):
     """
 
@@ -105,6 +105,7 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
     pseudo_cutoff_ptable = ptable[(ptable['AtomicNumber'] > pseudo_cutoff)]
     PCP_series = pd.Series(pseudo_cutoff_ptable['Symbol']).values   
     
+
     read_template = open(template, "rt")
     contents = read_template.read() 
     stripped_contents = contents # I need to have my cake and eat it too.
@@ -123,7 +124,7 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
             stripped_contents = stripped_contents.replace(char, '')
         atomic_species = stripped_contents.split("\n")
         ##########
-        # Remove blank lines
+        # Remove blank linesz
         iii = 0
         while iii != len(atomic_species):
             if len(atomic_species[iii]) == 0:
@@ -165,6 +166,19 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
             contents += xyz_data[iii]+'\n'
         contents += '\n'
         ##########
+        
+        # Change the multiplicity of the compound as needed
+        #TODO AK555 I have no clue if this is right. This is very 
+        # important, so I need to check this with someone. I know
+        # that the multiplicity will always be a singlet in this case.
+        total_electrons = (-1) * int(oxidation_state)
+        for atom in atoms:
+            atom_series = ptable[(ptable['Symbol'] == atom)]
+            total_electrons += int(atom_series['AtomicNumber'].values[0])
+
+        if (total_electrons % 2) != 0:
+            charge = str(1)
+        
         # Remove duplicate atoms using a list comprehension
         thinned_atoms = []
         [thinned_atoms.append(x) for x in atoms if x not in thinned_atoms]
@@ -262,8 +276,9 @@ def main(outputfilename='o.com', configFile='config.ini'):
     procs = '%nprocshared='+config['Properties']['processors']+'\n'
     mem = '%mem='+config['Properties']['memory']+'\n' 
     header_path = config['Properties']['header']
+    oxidation_state = config['Properties']['oxidation_state']
     
-    commaker(template, basis_set, title, charge, multiplicity, procs, mem,
+    commaker(template, basis_set, title, charge, multiplicity, oxidation_state, procs, mem,
              header_path, outputfilename)
     
 
