@@ -3,6 +3,29 @@ import numpy as np
 
 from Commaker import commaker
 
+"""
+Notes
+-----
+
+I envision this being run after the main optimization has concluded. 
+The first of which is that I am not positive whether or not I should
+optimize this or not after the split. In terms of relative energy,
+would not the relative energies stay the same? I could then run 
+a mere ZPE calculation on the cleaved bits. 
+
+BBB uses strict indexes to identify the atoms that need to be removed.
+While that does make it easier programmatically, I would prefer to make
+this easier for myself and any other users down the line by using math
+and logic to find the atoms that need to be removed. This leads to some
+assumptions:
+
+    1. The C atom of the methane is always the closest C atom to the metal
+    2. The leaving H is always the furthest from the methane's core
+
+These have some clear problems. The first being the most problematic of them
+all. 
+
+"""
 
 filename = "o.com"
 
