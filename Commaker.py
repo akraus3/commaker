@@ -111,13 +111,14 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
     pseudo_cutoff_ptable = ptable[(ptable['AtomicNumber'] > pseudo_cutoff)]
     PCP_series = pd.Series(pseudo_cutoff_ptable['Symbol']).values   
     
-    read_template = open(template, "rt")
-    contents = read_template.read() 
-    stripped_contents = contents # I need to have my cake and eat it too.
-    read_template.close()
+    if not '_io.StringIO' in str(type(template)):
+        read_template = open(template, "rt")
+        contents = read_template.read() 
+        stripped_contents = contents # I need to have my cake and eat it too.
+        read_template.close()
     
     # This is the pathway for xyz files of a very clean type
-    if template.split('.')[1] == 'xyz':
+    if template.split('.')[1] == 'xyz' or '_io.StringIO' in str(type(template)):
         ##########
         # These lines take the template and boil down the template xyz file
         # into just a list of atoms without duplicates

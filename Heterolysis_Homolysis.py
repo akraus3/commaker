@@ -1,3 +1,6 @@
+import configparser
+from io import StringIO
+
 import pandas as pd
 import numpy as np
 
@@ -50,10 +53,11 @@ def Split_Atoms(input_file):
 
     for iii in range(len(mol_lines)):
         #This gathers the charge/multiplicity from the file
-        cm_stripper = mol_lines[iii].split('  ')
+        cm_stripper = mol_lines[iii].split(' ')
         if len(cm_stripper) == 2:
-            charge = cm_stripper[0]
-            multiplicity = cm_stripper[1]
+            if (len(cm_stripper[0]) + len(cm_stripper[1])) < 3:
+                charge = cm_stripper[0]
+                multiplicity = cm_stripper[1]
 
         for symbol in p_symbols:
             spaced_symbol = symbol+' '
@@ -131,28 +135,88 @@ def Split_Atoms(input_file):
                 temp_coordinates.append(coordinate)
                 temp_distances.append(distance)
 
-    print(temp_coordinates)
-    print(temp_distances)
 
     transition_index = [0, 0]
     for iii in range(len(temp_distances)):
         if temp_distances[iii] > transition_index[0]:
             transition_index = [temp_distances[iii], iii]
     
+    print(transition_index)
     del(temp_coordinates[transition_index[1]])
-    sd_full.append(temp_coordinates)
+    
+    sd_full = [sd_full]
+    for H in temp_coordinates:
+        sd_full.append(H)
 
-    methyl_coords = temp_coordinates
+    methylXYZ = ''
+    cmplxXYZ = ''
 
-    print(methyl_coords) 
+    for coordinate in xyz_data:
+        methyl_coordinate = False
+        for atom in sd_full:
+            symbol = atom[0]
+            x = str(atom[1])
+            y = str(atom[2])
+            z = str(atom[3])
+            
+            if (symbol in coordinate and x in coordinate and y in coordinate
+                and z in coordinate):
+                methylXYZ += coordinate+'\n'
+                methyl_coordinate = True
 
+        if not methyl_coordinate:
+            cmplxXYZ += coordinate+'\n'
+                
+        
+    
+    methyl_file = StringIO()
+    methyl_file.write(methylXYZ)
+    cmplx_file = StringIO()
+    cmplx_file.write(cmplxXYZ)
 
+    
+
+    return methyl_file, cmplx_file, charge, multiplicity
 
             
+def charge_multiplicity(base_charge, base_multiplicity, split_type='homolysis'):
+    
+    if "homolysis" in split_type:
+        metal_multiplicity = int(base_multiplicity) + 1
+        carbon_multiplicity = 1 # One unpaired electron
+        metal_charge = int(base_charge)
+        carbon_charge = int(base_charge)
+    else:
+        pass
 
 
+    # TODO ak555 Finish this up. I need to mess with the heterolysis part
+
+    metal = (metal_charge, metal_multiplicity)
+    carbon = (carbon_charge, carbon_multiplicity)
+
+    return metal, carbon
 
 
+meth, cmplx, charge, multiplicity = Split_Atoms(filename)
+metal, carbon = charge_multiplicity(charge, multiplicity)
 
 
-Split_Atoms(filename)
+def main(outputfilename='oCarbon.com', configFile='config.ini'):
+    
+    config = configparser.ConfigParser()
+    config.read(configFile)
+    template = meth
+    basis_set = config['Files']['basis_set']
+    title = config['Properties']['title']
+    charge = carbon[0]
+    multiplicity = carbon[1]    
+    procs = '%nprocshared='+config['Properties']['processors']+'\n'
+    mem = '%mem='+config['Properties']['memory']+'\n' 
+    header_path = config['Properties']['header']
+    
+    commaker(template, basis_set, title, charge, multiplicity, procs, mem,
+             header_path, outputfilename)
+
+
+main()
