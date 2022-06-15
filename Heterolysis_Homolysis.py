@@ -204,9 +204,8 @@ def Split_Atoms(input_file):
     cmplxXYZ += '\n'
 
     fname = input_file.split('.')[0] # Get rid of the fiel extension
-
-    methyl_fname = "MethylLG"+fname+".xyz" 
-    metalComplex_fname = "CoreComplex"+fname+".xyz"
+    methyl_fname = fname+"MethylLG.xyz" 
+    metalComplex_fname = fname+"CoreComplex.xyz"
     #endregion
 
     #region write the text files
@@ -268,18 +267,14 @@ def charge_multiplicity(base_charge, base_multiplicity, split_type='homolysis'):
     return metal, carbon
 
 
-def main(C_M, input, outputfilename, configFile='config.ini'): # Rename this?
+def main(input, configFile='config.ini'): # Rename this?
     """
 
     Parameters
     ----------
-    C_M : TUPLE or LIST
-        Tuple or list (Charge, Multiplicity) where each element is a STRING. 
     input : STRING
         This is the input file. Ideally a .com file produced by commaker, but
-        could be any .com file.  
-    outputfilename : STRING
-        This is the filename for the file that will be produced for the split. 
+        could be any .com file.   
     configFile : STRING, optional
         This is the filename for the config file. The default is 'config.ini'.
 
@@ -289,39 +284,39 @@ def main(C_M, input, outputfilename, configFile='config.ini'): # Rename this?
 
     """
 
+    methyl_fname, cmplx_fname, charge, multiplicity = Split_Atoms(input)
+    
+
+    methyl_outputfname = methyl_fname.split('.')[0]+'.com'
+    cmplx_outputfname = cmplx_fname.split('.')[0]+'.com'
+    
     # Read the config file for some of the necessary parameters. 
     config = configparser.ConfigParser()
     config.read(configFile)
+    split_type = config['Split']['split_type']
+
+    metal, carbon = charge_multiplicity(charge, multiplicity, split_type)
+
     basis_set = config['Files']['basis_set']
     title = config['Properties']['title']
-    charge = C_M[0]
-    multiplicity = C_M[1]    
+    carbon_charge = carbon[0]
+    carbon_multiplicity = carbon[1]
+    metal_charge = metal[0]
+    metal_multiplicity = metal[1]
     procs = '%nprocshared='+config['Properties']['processors']+'\n'
     mem = '%mem='+config['Properties']['memory']+'\n' 
     header_path = config['Split']['split_header']
 
     # Process each file for commaker. 
-    commaker(input, basis_set, title, charge, multiplicity, procs, mem,
-             header_path, outputfilename)
+    commaker(methyl_fname, basis_set, title, carbon_charge, carbon_multiplicity, 
+             procs, mem, header_path, methyl_outputfname)
+    
+    commaker(cmplx_fname, basis_set, title, metal_charge, metal_multiplicity, 
+             procs, mem, header_path, cmplx_outputfname)
 
 
 
 
 if __name__ == '__main__':
 
-    #TODO ak555 figure out a way to not read config twice, but I think its okay
-    # for now due to it not being commonly used. 
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
-    # Start creating the files and gathering the data. 
-    methyl_fname, cmplx_fname, charge, multiplicity = Split_Atoms(filename)
-    split_type = config['Split']['split_type']
-
-    methyl_outputfname = methyl_fname.split('.')[0]+'.com'
-    cmplx_outputfname = cmplx_fname.split('.')[0]+'.com'
-
-    metal, carbon = charge_multiplicity(charge, multiplicity, split_type)
-
-    main(metal, cmplx_fname, outputfilename=cmplx_outputfname)
-    main(carbon, methyl_fname, outputfilename=methyl_outputfname)
+    main(filename)
