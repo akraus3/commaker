@@ -313,6 +313,8 @@ def main(input, configFile='config.ini'): # Rename this?
     
     commaker(cmplx_fname, basis_set, title, metal_charge, metal_multiplicity, 
              procs, mem, header_path, cmplx_outputfname)
+    
+    return methyl_fname, cmplx_fname
 
 
 

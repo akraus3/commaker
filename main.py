@@ -36,9 +36,11 @@ def main(configFile='config.ini'):
         commaker(full_filename, basis_set, title, charge, multiplicity, procs, mem,
                  header_path, com_filename)
         
-        Heterolysis_Homolysis.main(com_filename)
+        C_fname, metal_fname = Heterolysis_Homolysis.main(com_filename)
 
         subprocess.check_call('rung16 %s' % (com_filename), shell=True)
+        subprocess.check_call('rung16 %s' % (C_fname), shell=True)
+        subprocess.check_call('rung16 %s' % (metal_fname), shell=True)
     
         
 
