@@ -257,7 +257,7 @@ def charge_multiplicity(base_charge, base_multiplicity, split_type='homolysis'):
     # finish it. 
     if "homolysis" in split_type:
         metal_multiplicity = int(base_multiplicity) + 1
-        carbon_multiplicity = 1 # One unpaired electron
+        carbon_multiplicity = 2 # Should be a doublet. 
         metal_charge = int(base_charge)
         carbon_charge = int(base_charge)
     else:
