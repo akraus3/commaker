@@ -146,7 +146,6 @@ def Split_Atoms(input_file):
                         C_H_vector = xyz_coords - H_xyz_coords
                         distance = np.linalg.norm(C_H_vector)
 
-                        print(distance)
                         if distance < 1.3: #The max distance shown was 1.27
                             x +=1
 
@@ -321,11 +320,11 @@ def main(input, configFile='config.ini'): # Rename this?
     commaker(cmplx_fname, basis_set, title, metal_charge, metal_multiplicity, 
              procs, mem, header_path, cmplx_outputfname)
     
-    return methyl_fname, cmplx_fname
+    return methyl_outputfname, cmplx_outputfname
 
 
 
 
 if __name__ == '__main__':
 
-    main(filename)
+    meth, cmplx = main(filename)
