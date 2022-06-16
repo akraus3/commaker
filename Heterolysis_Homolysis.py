@@ -311,14 +311,15 @@ def main(input, configFile='config.ini'): # Rename this?
     metal_multiplicity = metal[1]
     procs = '%nprocshared='+config['Properties']['processors']+'\n'
     mem = '%mem='+config['Properties']['memory']+'\n' 
-    header_path = config['Split']['split_header']
+    M_header_path = config['Split']['M_split_header']
+    C_header_path = config['Split']['C_split_header']
 
     # Process each file for commaker. 
     commaker(methyl_fname, basis_set, title, carbon_charge, carbon_multiplicity, 
-             procs, mem, header_path, methyl_outputfname)
+             procs, mem, C_header_path, methyl_outputfname)
     
     commaker(cmplx_fname, basis_set, title, metal_charge, metal_multiplicity, 
-             procs, mem, header_path, cmplx_outputfname)
+             procs, mem, M_header_path, cmplx_outputfname)
     
     return methyl_outputfname, cmplx_outputfname
 
@@ -327,4 +328,4 @@ def main(input, configFile='config.ini'): # Rename this?
 
 if __name__ == '__main__':
 
-    meth, cmplx = main(filename)
+    main(filename)
