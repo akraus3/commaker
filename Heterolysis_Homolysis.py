@@ -21,11 +21,7 @@ this easier for myself and any other users down the line by using math
 and logic to find the atoms that need to be removed. This leads to some
 assumptions:
 
-    1. The C atom of the methane is always the closest C atom to the metal
-    2. The leaving H is always the furthest from the methane's core
-
-These have some clear problems. The first being the most problematic of them
-all.
+    1. The leaving H is always the furthest from the methane's core
 
 I also don't know if I should optimize the split parts or not. 
 -----
@@ -128,23 +124,34 @@ def Split_Atoms(input_file):
     metal_coordinates = np.array(metal_coordinates) # math reasons
     #endregion
 
-    #region find the closest Carbon to the metal core
-    shortest_distance = 10 # arbitrary large distance
+    #region find the methyl carbon
+    shortest_distance = 2.3 # arbitrary distance to reduce calculations
     leavingCarbon = []
-
+    
     for coordinate in coordinates:
         symbol = coordinate[0]
         xyz_coords = np.array(coordinate[1:])
-
-        if symbol == 'C': # Try to find the Carbon closest to the metal core
-            
+        if symbol == 'C': # Try to find a Carbon close to the metal core
+            x = 0
             difference = metal_coordinates - xyz_coords
-
+            
             distance = np.linalg.norm(difference)
-
+            
             if distance < shortest_distance: # Iterates through each, records
-                shortest_distance = distance
-                leavingCarbon = coordinate
+                for H_coord in coordinates: # Next find out if 2 H are close
+                    H_coord_symbol = H_coord[0]
+                    H_xyz_coords = np.array(H_coord[1:])
+
+                    if H_coord_symbol == 'H':
+                        C_H_vector = xyz_coords - H_xyz_coords
+                        distance = np.linalg.norm(C_H_vector)
+
+                        print(distance)
+                        if distance < 1.3: #The max distance shown was 1.27
+                            x +=1
+
+            if x > 3: #Be absolutely positive that I have the methane
+                leavingCarbon = coordinate 
     
     C_coords = np.array(leavingCarbon[1:])
     #endregion
