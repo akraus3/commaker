@@ -111,6 +111,8 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
     pseudo_cutoff_ptable = ptable[(ptable['AtomicNumber'] > pseudo_cutoff)]
     PCP_series = pd.Series(pseudo_cutoff_ptable['Symbol']).values   
     
+    CM_passed = False
+
     if not '_io.StringIO' in str(type(template)):
         read_template = open(template, "rt")
         contents = read_template.read() 
@@ -118,7 +120,7 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
         read_template.close()
     
     # This is the pathway for xyz files of a very clean type
-    if template.split('.')[1] == 'xyz' or '_io.StringIO' in str(type(template)):
+    if template.split('.')[-1] == 'xyz' or '_io.StringIO' in str(type(template)):
         ##########
         # These lines take the template and boil down the template xyz file
         # into just a list of atoms without duplicates
@@ -146,7 +148,7 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
     
     # This is the pathway for the mol files, particularly those created by 
     # MASON.
-    elif template.split('.')[1] == 'mol':
+    elif template.split('.')[-1] == 'mol':
         mol_lines = contents.split('\n') # Splits the string into lines
         xyz_data = []
         atoms = []
@@ -177,7 +179,7 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
         [thinned_atoms.append(x) for x in atoms if x not in thinned_atoms]
         ##########        
     
-    elif template.split('.')[1] == 'gjf':
+    elif template.split('.')[-1] == 'gjf':
         mol_lines = contents.split('\n') # Splits the string into lines
         xyz_data = []
         atoms = []
@@ -190,9 +192,12 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
         for iii in range(len(mol_lines)):
             #This gathers the charge/multiplicity from the file
             cm_stripper = mol_lines[iii].split('  ')
-            if len(cm_stripper) == 2:
+            if len(cm_stripper[0]) == 3 and not CM_passed:
+                cm_stripper = cm_stripper[0].split(' ')
+                print(cm_stripper)
                 charge = cm_stripper[0]
                 multiplicity = cm_stripper[1]
+                CM_passed = True
 
             for symbol in p_symbols:
                 spaced_symbol = symbol+' '
@@ -212,6 +217,8 @@ def commaker(template, basis_set, title, charge, multiplicity, procs,
         [thinned_atoms.append(x) for x in atoms if x not in thinned_atoms]
         ##########         
 
+    print(charge)
+    print(multiplicity)
 
 
     ##########
